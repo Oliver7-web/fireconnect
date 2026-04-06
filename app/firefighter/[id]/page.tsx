@@ -20,6 +20,11 @@ export default function FirefighterProfile() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentFirefighterId, setCurrentFirefighterId] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [adminAction, setAdminAction] = useState<'temp_ban' | 'permanent_ban' | null>(null);
+  const [banReason, setBanReason] = useState('');
+  const [banDays, setBanDays] = useState(7);
 
   useEffect(() => {
     if (params.id) {
@@ -32,6 +37,16 @@ export default function FirefighterProfile() {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       setCurrentUserId(user.id);
+      
+      // Verificar se é admin
+      const { data: userData } = await supabase
+        .from('users')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+      
+      setIsAdmin(userData?.is_admin || false);
+      
       // Buscar ID do firefighter do usuário atual
       const { data: ffData } = await supabase
         .from('firefighters')
@@ -159,6 +174,43 @@ export default function FirefighterProfile() {
     }
   };
 
+  const handleAdminAction = async () => {
+    if (!banReason.trim()) {
+      alert('Por favor, informe o motivo');
+      return;
+    }
+
+    try {
+      if (adminAction === 'temp_ban') {
+        const { error } = await supabase.rpc('temp_ban_user', {
+          target_user_id: firefighter.user_id,
+          days: banDays,
+          reason: banReason,
+          admin_user_id: currentUserId
+        });
+
+        if (error) throw error;
+        alert(`✅ Usuário bloqueado por ${banDays} dias!`);
+      } else if (adminAction === 'permanent_ban') {
+        const { error } = await supabase.rpc('ban_user', {
+          target_user_id: firefighter.user_id,
+          reason: banReason,
+          admin_user_id: currentUserId
+        });
+
+        if (error) throw error;
+        alert('✅ Usuário banido permanentemente!');
+      }
+
+      setShowAdminModal(false);
+      setBanReason('');
+      setAdminAction(null);
+      router.push('/admin');
+    } catch (error: any) {
+      alert('❌ Erro: ' + error.message);
+    }
+  };
+
   if (loading) return <Loading />;
   if (!firefighter) return (
     <ProtectedRoute>
@@ -282,6 +334,33 @@ export default function FirefighterProfile() {
                   </button>
                 )}
               </div>
+              
+              {/* Botões de Admin */}
+              {isAdmin && currentFirefighterId !== params.id && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-xs text-gray-500 mb-2 font-semibold">🛡️ Ações Administrativas</p>
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                    <button
+                      onClick={() => {
+                        setAdminAction('temp_ban');
+                        setShowAdminModal(true);
+                      }}
+                      className="btn-secondary text-xs py-2 px-3 flex items-center justify-center text-orange-600 border-orange-600"
+                    >
+                      ⏱️ Bloqueio Temporal
+                    </button>
+                    <button
+                      onClick={() => {
+                        setAdminAction('permanent_ban');
+                        setShowAdminModal(true);
+                      }}
+                      className="btn-secondary text-xs py-2 px-3 flex items-center justify-center text-red-600 border-red-600"
+                    >
+                      🚫 Banir Permanente
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -403,6 +482,70 @@ export default function FirefighterProfile() {
         )}
       </div>
     </div>
+    
+    {/* Modal de Ação Administrativa */}
+    {showAdminModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-lg p-6 max-w-md w-full">
+          <h2 className="text-xl font-bold text-black mb-4">
+            {adminAction === 'temp_ban' ? '⏱️ Bloqueio Temporal' : '🚫 Banimento Permanente'}
+          </h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Usuário: <strong>{firefighter?.name}</strong>
+          </p>
+          
+          {adminAction === 'temp_ban' && (
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Duração do bloqueio:
+              </label>
+              <select
+                value={banDays}
+                onChange={(e) => setBanDays(parseInt(e.target.value))}
+                className="input-field"
+              >
+                <option value={1}>1 dia</option>
+                <option value={3}>3 dias</option>
+                <option value={7}>7 dias</option>
+                <option value={15}>15 dias</option>
+                <option value={30}>30 dias</option>
+              </select>
+            </div>
+          )}
+          
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Motivo:
+          </label>
+          <textarea
+            value={banReason}
+            onChange={(e) => setBanReason(e.target.value)}
+            className="input-field min-h-[100px] mb-4"
+            placeholder="Descreva o motivo..."
+          />
+          
+          <div className="flex space-x-3">
+            <button
+              onClick={() => {
+                setShowAdminModal(false);
+                setBanReason('');
+                setAdminAction(null);
+              }}
+              className="btn-secondary flex-1"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleAdminAction}
+              className={`btn-primary flex-1 ${
+                adminAction === 'temp_ban' ? 'bg-orange-600' : 'bg-red-600'
+              }`}
+            >
+              Confirmar
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </ProtectedRoute>
   );
 }
