@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Loading from '@/components/Loading';
-import { Camera, MapPin, Mail, Phone, Edit, LogOut, Crown, Award, Save, X } from 'lucide-react';
+import { Camera, MapPin, Mail, Phone, Edit, LogOut, Crown, Award, Save, X, CheckCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
@@ -37,6 +37,7 @@ export default function ProfilePage() {
     linkedin: '',
     photo_url: '',
     isPremium: false,
+    isVerified: false,
     rating: 0,
     completedJobs: 0,
     specialties: [] as string[]
@@ -85,6 +86,7 @@ export default function ProfilePage() {
             linkedin: ffData.linkedin || '',
             photo_url: ffData.photo_url || '',
             isPremium: false,
+            isVerified: ffData.is_verified || false,
             rating: Number(ffData.rating) || 0,
             completedJobs: 0,
             specialties: ffData.specialties || []
@@ -113,6 +115,7 @@ export default function ProfilePage() {
             linkedin: '',
             photo_url: compData.logo_url || '',
             isPremium: false,
+            isVerified: compData.is_verified || false,
             rating: 0,
             completedJobs: compData.contracts_count || 0,
             specialties: []
@@ -328,7 +331,12 @@ export default function ProfilePage() {
               Clique no ícone da câmera para adicionar sua foto
             </p>
             
-            <h1 className="text-xl font-semibold text-black mb-2">{profile.name}</h1>
+            <h1 className="text-xl font-semibold text-black mb-2 flex items-center space-x-2">
+              <span>{profile.name}</span>
+              {profile.isVerified && (
+                <CheckCircle size={20} className="text-blue-500" title="Verificado" />
+              )}
+            </h1>
             
             {profile.isPremium && (
               <div className="flex items-center space-x-2 bg-yellow-50 text-yellow-700 px-4 py-1 rounded-lg mb-4">

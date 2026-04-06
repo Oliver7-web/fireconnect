@@ -1,8 +1,9 @@
 'use client';
 
-import { Home, Search, MessageCircle, Calendar, User, Flame, Heart, PlusSquare } from 'lucide-react';
+import { Home, Search, MessageCircle, Calendar, User, Flame } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import AdminButton from './AdminButton';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -25,6 +26,8 @@ export default function Navbar() {
             
             {/* Navegação */}
             <div className="flex items-center space-x-6">
+              <AdminButton />
+              
               <Link href="/dashboard">
                 <div className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                   {isActive('/dashboard') ? (

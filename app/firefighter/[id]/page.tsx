@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Loading from '@/components/Loading';
-import { MapPin, Star, Download, MessageCircle, ArrowLeft, Award, UserPlus, UserMinus, Phone, Link } from 'lucide-react';
+import { MapPin, Star, Download, MessageCircle, ArrowLeft, Award, UserPlus, UserMinus, Phone, Link, CheckCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export default function FirefighterProfile() {
@@ -199,7 +199,12 @@ export default function FirefighterProfile() {
             
             <div className="flex-1 text-center md:text-left">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-3">
-                <h1 className="text-2xl font-semibold text-black">{firefighter.name}</h1>
+                <div className="flex items-center space-x-2">
+                  <h1 className="text-2xl font-semibold text-black">{firefighter.name}</h1>
+                  {firefighter.is_verified && (
+                    <CheckCircle size={24} className="text-blue-500" title="Verificado" />
+                  )}
+                </div>
                 <span className={`mt-2 md:mt-0 badge ${
                   firefighter.available ? 'badge-success' : 'badge-gray'
                 }`}>
