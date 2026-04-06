@@ -10,12 +10,12 @@ interface FirefighterCardProps {
 
 export default function FirefighterCard({ firefighter }: FirefighterCardProps) {
   return (
-    <div className="card">
+    <div className="card hover:shadow-sm">
       {/* Header do Card */}
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 md:space-x-3 min-w-0">
           <div className={firefighter.available ? 'avatar-ring' : 'avatar-ring-simple'}>
-            <div className="w-10 h-10 rounded-full overflow-hidden bg-white">
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-full overflow-hidden bg-white flex-shrink-0">
               {firefighter.photo_url ? (
                 <img 
                   src={firefighter.photo_url} 
@@ -31,15 +31,15 @@ export default function FirefighterCard({ firefighter }: FirefighterCardProps) {
               )}
             </div>
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <Link href={`/firefighter/${firefighter.id}`}>
-              <h3 className="text-sm font-semibold text-black hover:text-gray-600">
+              <h3 className="text-xs md:text-sm font-semibold text-black hover:text-gray-600 truncate">
                 {firefighter.name}
               </h3>
             </Link>
             <div className="flex items-center text-xs text-gray-500">
-              <MapPin size={10} className="mr-1" />
-              <span>{firefighter.location}</span>
+              <MapPin size={10} className="mr-1 flex-shrink-0" />
+              <span className="truncate">{firefighter.location}</span>
             </div>
           </div>
         </div>
@@ -50,7 +50,7 @@ export default function FirefighterCard({ firefighter }: FirefighterCardProps) {
 
       {/* Imagem Principal */}
       <Link href={`/firefighter/${firefighter.id}`}>
-        <div className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3 cursor-pointer">
+        <div className="w-full aspect-square bg-gray-100 rounded-xl overflow-hidden mb-3 cursor-pointer">
           {firefighter.photo_url ? (
             <img 
               src={firefighter.photo_url} 
@@ -69,37 +69,37 @@ export default function FirefighterCard({ firefighter }: FirefighterCardProps) {
 
       {/* Ações */}
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3 md:space-x-4">
           <button className="hover:opacity-60 transition-opacity">
-            <MessageCircle size={24} className="text-black" />
+            <MessageCircle size={22} className="text-black md:w-6 md:h-6" />
           </button>
-          <div className="flex items-center space-x-1 bg-yellow-50 px-2 py-1 rounded">
-            <Star size={14} className="text-yellow-500 fill-yellow-500" />
+          <div className="flex items-center space-x-1 bg-yellow-50 px-2 py-1 rounded-md">
+            <Star size={13} className="text-yellow-500 fill-yellow-500" />
             <span className="text-xs font-semibold text-black">
               {Number(firefighter.rating).toFixed(1)}
             </span>
           </div>
         </div>
-        <span className={`badge ${firefighter.available ? 'badge-success' : 'badge-gray'}`}>
+        <span className={`badge text-xs ${firefighter.available ? 'badge-success' : 'badge-gray'}`}>
           {firefighter.available ? 'Disponível' : 'Ocupado'}
         </span>
       </div>
 
       {/* Descrição */}
-      <div className="mb-2">
-        <p className="text-sm">
+      <div className="mb-3">
+        <p className="text-xs md:text-sm line-clamp-2">
           <span className="font-semibold text-black">{firefighter.name}</span>
           {' '}
           <span className="text-gray-700">
-            {firefighter.description?.substring(0, 80)}
-            {firefighter.description && firefighter.description.length > 80 ? '...' : ''}
+            {firefighter.description?.substring(0, 60)}
+            {firefighter.description && firefighter.description.length > 60 ? '...' : ''}
           </span>
         </p>
       </div>
 
       {/* Botão Ver Perfil */}
       <Link href={`/firefighter/${firefighter.id}`}>
-        <button className="w-full btn-primary">
+        <button className="w-full btn-primary text-sm py-2">
           Ver Perfil Completo
         </button>
       </Link>

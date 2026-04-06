@@ -46,19 +46,19 @@ export default function Dashboard() {
         
         <div className="instagram-container py-8">
           {/* Stories/Premium Banner */}
-          <div className="mb-8 bg-white border border-gray-300 rounded-lg p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
-                  <Crown size={32} className="text-white" />
+          <div className="mb-6 bg-white border border-gray-300 rounded-xl p-5 md:p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="flex items-center space-x-3 md:space-x-4">
+                <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Crown size={28} className="text-white md:w-8 md:h-8" />
                 </div>
                 <div>
-                  <h3 className="text-base font-semibold text-black">Seja Premium</h3>
-                  <p className="text-sm text-gray-500">Destaque seu perfil nas buscas</p>
+                  <h3 className="text-sm md:text-base font-semibold text-black">Seja Premium</h3>
+                  <p className="text-xs md:text-sm text-gray-500">Destaque seu perfil nas buscas</p>
                 </div>
               </div>
-              <button className="btn-primary">
-                Assinar
+              <button className="btn-primary w-full md:w-auto whitespace-nowrap" disabled>
+                Em breve
               </button>
             </div>
           </div>
@@ -70,7 +70,7 @@ export default function Dashboard() {
           </div>
 
           {/* Grid de Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {firefighters.map((firefighter) => (
               <FirefighterCard key={firefighter.id} firefighter={firefighter} />
             ))}

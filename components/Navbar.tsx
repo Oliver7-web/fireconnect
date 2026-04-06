@@ -12,7 +12,7 @@ export default function Navbar() {
   return (
     <>
       {/* Desktop Navbar - Estilo Instagram */}
-      <nav className="hidden md:block fixed top-0 left-0 right-0 bg-white border-b border-gray-300 z-50">
+      <nav className="hidden md:block fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50 shadow-sm">
         <div className="instagram-container">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
@@ -78,8 +78,8 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile Navbar - Estilo Instagram */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 z-50">
-        <div className="flex justify-around items-center h-16 px-2">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 shadow-lg">
+        <div className="flex justify-around items-center h-14 px-2">
           <Link href="/dashboard">
             <div className="p-2">
               {isActive('/dashboard') ? (

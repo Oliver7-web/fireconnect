@@ -1,20 +1,28 @@
 .card {
   background: #ffffff;
   border: 1px solid #dbdbdb;
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 20px;
   transition: all 0.2s ease;
+  margin-bottom: 16px;
 }
 
 .card:hover {
   border-color: #b3b3b3;
 }
 
+@media (max-width: 768px) {
+  .card {
+    padding: 16px;
+    border-radius: 8px;
+  }
+}
+
 .btn-primary {
   background: #E53935;
   color: white;
-  padding: 8px 24px;
-  border-radius: 8px;
+  padding: 10px 24px;
+  border-radius: 10px;
   font-weight: 600;
   font-size: 14px;
   transition: all 0.2s ease;
@@ -22,12 +30,24 @@
   cursor: pointer;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background: #D32F2F;
 }
 
-.btn-primary:active {
+.btn-primary:active:not(:disabled) {
   transform: scale(0.98);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .btn-primary {
+    padding: 8px 20px;
+    font-size: 13px;
+  }
 }
 
 .btn-secondary {
@@ -91,6 +111,12 @@
   max-width: 935px;
   margin: 0 auto;
   padding: 0 20px;
+}
+
+@media (max-width: 768px) {
+  .instagram-container {
+    padding: 0 12px;
+  }
 }
 
 /* Avatar estilo Instagram */
