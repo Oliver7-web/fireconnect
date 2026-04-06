@@ -1,0 +1,107 @@
+.card {
+  background: #ffffff;
+  border: 1px solid #dbdbdb;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  border-color: #b3b3b3;
+}
+
+.btn-primary {
+  background: #E53935;
+  color: white;
+  padding: 8px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: #D32F2F;
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #262626;
+  padding: 8px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  border: 1px solid #dbdbdb;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: #fafafa;
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+.input-field {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #dbdbdb;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  background: #fafafa;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #a8a8a8;
+  background: white;
+}
+
+/* Badge estilo Instagram */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-success {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+
+.badge-gray {
+  background: #F5F5F5;
+  color: #757575;
+}
+
+/* Container estilo Instagram */
+.instagram-container {
+  max-width: 935px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Avatar estilo Instagram */
+.avatar-ring {
+  padding: 2px;
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  border-radius: 50%;
+}
+
+.avatar-ring-simple {
+  padding: 2px;
+  background: #dbdbdb;
+  border-radius: 50%;
+}

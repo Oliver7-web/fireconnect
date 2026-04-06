@@ -1,0 +1,67 @@
+===========================================
+COMANDOS PARA DEPLOY - COPIE E COLE
+===========================================
+
+PASSO 1: INICIALIZAR GIT
+-----------------------------------------
+cd fireconnect
+git init
+git add .
+git commit -m "Deploy FireConnect na Netlify"
+
+
+PASSO 2: CRIAR REPOSITÓRIO NO GITHUB
+-----------------------------------------
+1. Acesse: https://github.com/new
+2. Nome: fireconnect
+3. Público
+4. Criar repositório
+
+
+PASSO 3: CONECTAR E ENVIAR
+-----------------------------------------
+IMPORTANTE: Substitua SEU_USUARIO pelo seu usuário do GitHub!
+
+git remote add origin https://github.com/SEU_USUARIO/fireconnect.git
+git branch -M main
+git push -u origin main
+
+
+PASSO 4: NETLIFY - VARIÁVEIS DE AMBIENTE
+-----------------------------------------
+Copie e cole estas variáveis na Netlify:
+
+Nome: NEXT_PUBLIC_SUPABASE_URL
+Valor: https://kuusbirjvjpryqlazloc.supabase.co
+
+Nome: NEXT_PUBLIC_SUPABASE_ANON_KEY
+Valor: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1dXNiaXJqdmpwcnlxbGF6bG9jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MTY4ODYsImV4cCI6MjA5MDk5Mjg4Nn0.88ark12vIel0bw6AZdiqjdP61nY88uE4iqY2DqeOQVc
+
+
+PASSO 5: SUPABASE - URLS PERMITIDAS
+-----------------------------------------
+Adicione no Supabase (Authentication → URL Configuration):
+
+Site URL:
+https://seu-site.netlify.app
+
+Redirect URLs:
+https://seu-site.netlify.app/**
+
+
+COMANDOS PARA ATUALIZAR O SITE
+-----------------------------------------
+git add .
+git commit -m "Descrição da atualização"
+git push
+
+
+===========================================
+LINKS IMPORTANTES
+===========================================
+
+GitHub: https://github.com
+Netlify: https://app.netlify.com
+Supabase: https://supabase.com/dashboard
+
+===========================================
