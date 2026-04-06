@@ -30,8 +30,6 @@ export default function Register() {
     setLoading(true);
     
     try {
-      console.log('🔵 Iniciando registro...');
-      
       // 1. Criar usuário no Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
@@ -39,7 +37,6 @@ export default function Register() {
       });
 
       if (authError) {
-        console.error('❌ Erro no Auth:', authError);
         alert('Erro ao criar conta: ' + authError.message);
         setLoading(false);
         return;
@@ -52,13 +49,11 @@ export default function Register() {
       }
 
       const userId = authData.user.id;
-      console.log('✅ Auth criado. User ID:', userId);
 
       // Aguardar um pouco para garantir que o Auth foi criado
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // 2. Criar registro na tabela users
-      console.log('📝 Criando registro em users...');
       const { error: userError } = await supabase
         .from('users')
         .insert({
@@ -69,17 +64,13 @@ export default function Register() {
         });
 
       if (userError) {
-        console.error('❌ Erro ao criar user:', userError);
         alert('Erro ao salvar dados do usuário: ' + userError.message);
         setLoading(false);
         return;
       }
 
-      console.log('✅ User criado');
-
       // 3. Criar perfil específico
       if (userType === 'firefighter') {
-        console.log('📝 Criando perfil de bombeiro...');
         const { error: ffError } = await supabase
           .from('firefighters')
           .insert({
@@ -100,15 +91,11 @@ export default function Register() {
           });
           
         if (ffError) {
-          console.error('❌ Erro ao criar bombeiro:', ffError);
           alert('Erro ao criar perfil: ' + ffError.message);
           setLoading(false);
           return;
         }
-        
-        console.log('✅ Bombeiro criado');
       } else {
-        console.log('📝 Criando perfil de empresa...');
         const { error: compError } = await supabase
           .from('companies')
           .insert({
@@ -121,16 +108,12 @@ export default function Register() {
           });
           
         if (compError) {
-          console.error('❌ Erro ao criar empresa:', compError);
           alert('Erro ao criar perfil: ' + compError.message);
           setLoading(false);
           return;
         }
-        
-        console.log('✅ Empresa criada');
       }
 
-      console.log('🎉 Registro completo!');
       alert('✅ Conta criada com sucesso! Complete seu perfil agora.');
       
       // Fazer login automático
@@ -141,7 +124,7 @@ export default function Register() {
       
       router.push('/profile?edit=true');
     } catch (error: any) {
-      console.error('❌ Erro geral:', error);
+      console.error('Erro:', error);
       alert('Erro ao criar conta: ' + (error.message || 'Erro desconhecido'));
     } finally {
       setLoading(false);

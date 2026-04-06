@@ -47,8 +47,6 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    console.log('🔵 useEffect executado');
-    console.log('User:', user);
     if (user) {
       fetchProfile();
     }
@@ -56,38 +54,22 @@ export default function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      console.log('🔍 Buscando perfil...');
-      console.log('User ID:', user?.id);
-      
-      // Buscar tipo de usuário usando limit(1)
-      const { data: userDataArray, error: userError } = await supabase
+      const { data: userDataArray } = await supabase
         .from('users')
         .select('type')
         .eq('id', user?.id)
         .limit(1);
 
-      if (userError) {
-        console.error('❌ Erro ao buscar user:', userError);
-        return;
-      }
-
       const userData = userDataArray?.[0];
-      console.log('✅ User type:', userData?.type);
 
       if (userData?.type === 'firefighter') {
-        const { data: ffDataArray, error: ffError } = await supabase
+        const { data: ffDataArray } = await supabase
           .from('firefighters')
           .select('*')
           .eq('user_id', user?.id)
           .limit(1);
 
-        if (ffError) {
-          console.error('❌ Erro ao buscar firefighter:', ffError);
-          return;
-        }
-
         const ffData = ffDataArray?.[0];
-        console.log('📊 Dados do bombeiro:', ffData);
 
         if (ffData) {
           setProfile({
@@ -107,7 +89,6 @@ export default function ProfilePage() {
             completedJobs: 0,
             specialties: ffData.specialties || []
           });
-          console.log('✅ Profile state atualizado');
         }
       } else {
         const { data: compDataArray } = await supabase
@@ -139,33 +120,24 @@ export default function ProfilePage() {
         }
       }
     } catch (error) {
-      console.error('❌ Erro ao buscar perfil:', error);
+      console.error('Erro ao buscar perfil:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleSave = async () => {
-    alert('🔵 Botão Salvar foi clicado!');
     setSaving(true);
     try {
-      console.log('🔍 Iniciando salvamento...');
-      console.log('User ID:', user?.id);
-      
-      // Buscar tipo de usuário usando limit(1) ao invés de single()
       const { data: userDataArray, error: userError } = await supabase
         .from('users')
         .select('type')
         .eq('id', user?.id)
         .limit(1);
 
-      if (userError) {
-        console.error('❌ Erro ao buscar tipo de usuário:', userError);
-        throw userError;
-      }
+      if (userError) throw userError;
 
       const userData = userDataArray?.[0];
-      console.log('✅ Tipo de usuário:', userData?.type);
 
       if (userData?.type === 'firefighter') {
         const updateData = {
@@ -181,21 +153,12 @@ export default function ProfilePage() {
           specialties: profile.specialties
         };
         
-        console.log('📝 Dados para atualizar:', updateData);
-        
         const { error } = await supabase
           .from('firefighters')
           .update(updateData)
           .eq('user_id', user?.id);
 
-        console.log('📊 Resposta do update:', { error });
-
-        if (error) {
-          console.error('❌ Erro no update:', error);
-          throw error;
-        }
-        
-        console.log('✅ Perfil atualizado com sucesso!');
+        if (error) throw error;
       } else {
         const { error } = await supabase
           .from('companies')
@@ -211,9 +174,9 @@ export default function ProfilePage() {
 
       alert('✅ Perfil atualizado com sucesso!');
       setIsEditing(false);
-      await fetchProfile(); // Recarregar dados
+      await fetchProfile();
     } catch (error: any) {
-      console.error('❌ Erro completo:', error);
+      console.error('Erro ao salvar:', error);
       alert(`❌ Erro ao salvar perfil: ${error.message || 'Erro desconhecido'}`);
     } finally {
       setSaving(false);
@@ -677,8 +640,8 @@ export default function ProfilePage() {
                 <span>Estatísticas avançadas</span>
               </li>
             </ul>
-            <button className="w-full btn-primary">
-              Assinar por R$ 29,90/mês
+            <button disabled className="w-full btn-primary opacity-50 cursor-not-allowed">
+              Em breve - Assinar por R$ 29,90/mês
             </button>
           </div>
         )}
