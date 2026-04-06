@@ -58,24 +58,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 4. Função para verificar se bloqueio temporal expirou
-CREATE OR REPLACE FUNCTION check_temp_ban_expired()
-RETURNS TRIGGER AS $$
+-- 4. Função para verificar se bloqueio temporal expirou (executada em consultas)
+CREATE OR REPLACE FUNCTION check_and_update_temp_bans()
+RETURNS void AS $$
 BEGIN
-  IF NEW.is_temp_banned = true AND NEW.temp_ban_until < NOW() THEN
-    NEW.is_temp_banned = false;
-    NEW.temp_ban_until = NULL;
-    NEW.temp_ban_reason = NULL;
-  END IF;
-  RETURN NEW;
+  UPDATE users
+  SET is_temp_banned = false,
+      temp_ban_until = NULL,
+      temp_ban_reason = NULL
+  WHERE is_temp_banned = true 
+    AND temp_ban_until < NOW();
 END;
 $$ LANGUAGE plpgsql;
 
--- 5. Criar trigger para verificar expiração automaticamente
-DROP TRIGGER IF EXISTS check_temp_ban_trigger ON users;
-CREATE TRIGGER check_temp_ban_trigger
-  BEFORE SELECT ON users
-  FOR EACH ROW
-  EXECUTE FUNCTION check_temp_ban_expired();
+-- 5. Não precisa de trigger, a verificação será feita na aplicação
 
 SELECT 'Sistema de bloqueio temporal criado com sucesso!' as status;
