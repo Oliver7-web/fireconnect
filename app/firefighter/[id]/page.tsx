@@ -241,30 +241,41 @@ export default function FirefighterProfile() {
               
               <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
                 {currentFirefighterId && currentFirefighterId !== params.id && (
+                  <>
+                    <button 
+                      onClick={handleFollowToggle}
+                      className={`${isFollowing ? 'btn-secondary' : 'btn-primary'} flex items-center justify-center`}
+                    >
+                      {isFollowing ? (
+                        <>
+                          <UserMinus size={18} className="mr-2" />
+                          Deixar de Seguir
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus size={18} className="mr-2" />
+                          Seguir
+                        </>
+                      )}
+                    </button>
+                    <button className="btn-primary flex items-center justify-center">
+                      Contratar
+                    </button>
+                    <button className="btn-secondary flex items-center justify-center">
+                      <MessageCircle size={18} className="mr-2" />
+                      Mensagem
+                    </button>
+                  </>
+                )}
+                
+                {currentFirefighterId === params.id && (
                   <button 
-                    onClick={handleFollowToggle}
-                    className={`${isFollowing ? 'btn-secondary' : 'btn-primary'} flex items-center justify-center`}
+                    onClick={() => router.push('/profile')}
+                    className="btn-primary flex items-center justify-center w-full"
                   >
-                    {isFollowing ? (
-                      <>
-                        <UserMinus size={18} className="mr-2" />
-                        Deixar de Seguir
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus size={18} className="mr-2" />
-                        Seguir
-                      </>
-                    )}
+                    Editar Perfil
                   </button>
                 )}
-                <button className="btn-primary flex items-center justify-center">
-                  Contratar
-                </button>
-                <button className="btn-secondary flex items-center justify-center">
-                  <MessageCircle size={18} className="mr-2" />
-                  Mensagem
-                </button>
               </div>
             </div>
           </div>
