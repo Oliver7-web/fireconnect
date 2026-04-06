@@ -65,14 +65,14 @@ export default function AdminPanel() {
                 .select('name, photo_url')
                 .eq('user_id', u.id)
                 .single();
-              return { ...u, ...ffData };
+              return { ...u, ...(ffData || {}) };
             } else {
               const { data: compData } = await supabase
                 .from('companies')
                 .select('name, logo_url as photo_url')
                 .eq('user_id', u.id)
                 .single();
-              return { ...u, ...compData };
+              return { ...u, ...(compData || {}) };
             }
           })
         );
