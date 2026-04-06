@@ -16,11 +16,27 @@ export default function Register() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!name.trim()) {
+      alert('Por favor, preencha seu nome');
+      return;
+    }
+    
+    if (password.length < 6) {
+      alert('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+    
     try {
       // 1. Criar usuário no Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: {
+          data: {
+            name: name,
+            user_type: userType
+          }
+        }
       });
 
       if (authError) {
@@ -50,7 +66,7 @@ export default function Register() {
 
       // 3. Criar perfil específico
       if (userType === 'firefighter') {
-        await supabase
+        const { error: ffError } = await supabase
           .from('firefighters')
           .insert([
             {
@@ -59,27 +75,37 @@ export default function Register() {
               location: '',
               rating: 0,
               available: true,
-              specialties: []
+              specialties: [],
+              description: `Olá! Sou ${name}, bombeiro civil profissional.`
             }
           ]);
+          
+        if (ffError) {
+          console.error('Erro ao criar perfil de bombeiro:', ffError);
+        }
       } else {
-        await supabase
+        const { error: compError } = await supabase
           .from('companies')
           .insert([
             {
               user_id: authData.user.id,
               name,
               location: '',
-              contracts_count: 0
+              contracts_count: 0,
+              description: `${name} - Empresa de serviços`
             }
           ]);
+          
+        if (compError) {
+          console.error('Erro ao criar perfil de empresa:', compError);
+        }
       }
 
-      alert('Conta criada com sucesso!');
+      alert('Conta criada com sucesso! Bem-vindo ao FireConnect!');
       router.push('/dashboard');
     } catch (error) {
       console.error('Erro:', error);
-      alert('Erro ao criar conta');
+      alert('Erro ao criar conta. Tente novamente.');
     }
   };
 
@@ -100,27 +126,43 @@ export default function Register() {
           <div className="flex space-x-2 mb-6">
             <button
               onClick={() => setUserType('firefighter')}
-              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
+              className={`flex-1 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center space-x-2 ${
                 userType === 'firefighter'
                   ? 'bg-primary text-white'
-                  : 'bg-gray-100 text-gray-700'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              <User className="inline mr-1" size={16} />
-              Bombeiro
+              <User className="inline" size={18} />
+              <span>Sou Bombeiro</span>
             </button>
             <button
               onClick={() => setUserType('company')}
-              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
+              className={`flex-1 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center space-x-2 ${
                 userType === 'company'
                   ? 'bg-primary text-white'
-                  : 'bg-gray-100 text-gray-700'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              <Building className="inline mr-1" size={16} />
-              Empresa
+              <Building className="inline" size={18} />
+              <span>Sou Empresa</span>
             </button>
           </div>
+
+          {userType === 'firefighter' && (
+            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>👨‍🚒 Bombeiro Civil:</strong> Crie seu perfil profissional, mostre suas certificações e seja encontrado por empresas!
+              </p>
+            </div>
+          )}
+
+          {userType === 'company' && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-sm text-green-800">
+                <strong>🏢 Empresa:</strong> Encontre bombeiros civis qualificados para seus eventos e projetos!
+              </p>
+            </div>
+          )}
 
           <form onSubmit={handleRegister} className="space-y-4">
             <div>

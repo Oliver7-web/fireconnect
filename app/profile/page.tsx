@@ -162,10 +162,22 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecione apenas imagens (JPG, PNG, etc.)');
+      return;
+    }
+
+    // Validar tamanho (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('A imagem deve ter no máximo 5MB');
+      return;
+    }
+
     setUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/avatar.${fileExt}`;
+      const fileName = `${user.id}/avatar-${Date.now()}.${fileExt}`;
 
       // Upload do arquivo
       const { error: uploadError } = await supabase.storage
@@ -199,10 +211,10 @@ export default function ProfilePage() {
       }
 
       setProfile({ ...profile, photo_url: data.publicUrl });
-      alert('Foto atualizada com sucesso!');
+      alert('✅ Foto atualizada com sucesso!');
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
-      alert('Erro ao fazer upload da foto');
+      alert('❌ Erro ao fazer upload da foto. Tente novamente.');
     } finally {
       setUploading(false);
     }
@@ -223,16 +235,24 @@ export default function ProfilePage() {
           <div className="card mb-6">
           <div className="flex flex-col items-center">
             <div className="relative mb-4">
-              <div className="w-32 h-32 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden">
-                {profile.photo_url ? (
+              <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
+                {uploading ? (
+                  <div className="flex flex-col items-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <p className="text-xs text-gray-500 mt-2">Enviando...</p>
+                  </div>
+                ) : profile.photo_url ? (
                   <img src={profile.photo_url} alt={profile.name} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-4xl font-bold text-gray-600">
+                  <span className="text-4xl font-bold text-gray-400">
                     {profile.name.charAt(0)}
                   </span>
                 )}
               </div>
-              <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full hover:bg-red-600 cursor-pointer">
+              <label 
+                htmlFor="avatar-upload" 
+                className={`absolute bottom-0 right-0 bg-primary text-white p-3 rounded-full hover:bg-red-600 cursor-pointer shadow-lg transition-all ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
                 <Camera size={20} />
                 <input
                   id="avatar-upload"
@@ -240,9 +260,14 @@ export default function ProfilePage() {
                   accept="image/*"
                   onChange={handleAvatarUpload}
                   className="hidden"
+                  disabled={uploading}
                 />
               </label>
             </div>
+            
+            <p className="text-xs text-gray-500 mb-4 text-center">
+              Clique no ícone da câmera para adicionar sua foto
+            </p>
             
             <h1 className="text-xl font-semibold text-black mb-2">{profile.name}</h1>
             
