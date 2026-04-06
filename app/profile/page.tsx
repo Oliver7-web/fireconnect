@@ -16,6 +16,14 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
+  // Verificar se deve abrir em modo de edição
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('edit') === 'true') {
+      setIsEditing(true);
+    }
+  }, []);
+  
   const [profile, setProfile] = useState({
     name: '',
     email: '',
@@ -39,6 +47,8 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
+    console.log('🔵 useEffect executado');
+    console.log('User:', user);
     if (user) {
       fetchProfile();
     }
@@ -46,19 +56,38 @@ export default function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      // Buscar tipo de usuário
-      const { data: userData } = await supabase
+      console.log('🔍 Buscando perfil...');
+      console.log('User ID:', user?.id);
+      
+      // Buscar tipo de usuário usando limit(1)
+      const { data: userDataArray, error: userError } = await supabase
         .from('users')
         .select('type')
         .eq('id', user?.id)
-        .single();
+        .limit(1);
+
+      if (userError) {
+        console.error('❌ Erro ao buscar user:', userError);
+        return;
+      }
+
+      const userData = userDataArray?.[0];
+      console.log('✅ User type:', userData?.type);
 
       if (userData?.type === 'firefighter') {
-        const { data: ffData } = await supabase
+        const { data: ffDataArray, error: ffError } = await supabase
           .from('firefighters')
           .select('*')
           .eq('user_id', user?.id)
-          .single();
+          .limit(1);
+
+        if (ffError) {
+          console.error('❌ Erro ao buscar firefighter:', ffError);
+          return;
+        }
+
+        const ffData = ffDataArray?.[0];
+        console.log('📊 Dados do bombeiro:', ffData);
 
         if (ffData) {
           setProfile({
@@ -78,13 +107,16 @@ export default function ProfilePage() {
             completedJobs: 0,
             specialties: ffData.specialties || []
           });
+          console.log('✅ Profile state atualizado');
         }
       } else {
-        const { data: compData } = await supabase
+        const { data: compDataArray } = await supabase
           .from('companies')
           .select('*')
           .eq('user_id', user?.id)
-          .single();
+          .limit(1);
+
+        const compData = compDataArray?.[0];
 
         if (compData) {
           setProfile({
@@ -107,39 +139,63 @@ export default function ProfilePage() {
         }
       }
     } catch (error) {
-      console.error('Erro ao buscar perfil:', error);
+      console.error('❌ Erro ao buscar perfil:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleSave = async () => {
+    alert('🔵 Botão Salvar foi clicado!');
     setSaving(true);
     try {
-      const { data: userData } = await supabase
+      console.log('🔍 Iniciando salvamento...');
+      console.log('User ID:', user?.id);
+      
+      // Buscar tipo de usuário usando limit(1) ao invés de single()
+      const { data: userDataArray, error: userError } = await supabase
         .from('users')
         .select('type')
         .eq('id', user?.id)
-        .single();
+        .limit(1);
+
+      if (userError) {
+        console.error('❌ Erro ao buscar tipo de usuário:', userError);
+        throw userError;
+      }
+
+      const userData = userDataArray?.[0];
+      console.log('✅ Tipo de usuário:', userData?.type);
 
       if (userData?.type === 'firefighter') {
+        const updateData = {
+          name: profile.name,
+          location: profile.location,
+          description: profile.description,
+          bio: profile.bio,
+          qualifications: profile.qualifications,
+          experience_years: profile.experience_years,
+          phone: profile.phone,
+          instagram: profile.instagram,
+          linkedin: profile.linkedin,
+          specialties: profile.specialties
+        };
+        
+        console.log('📝 Dados para atualizar:', updateData);
+        
         const { error } = await supabase
           .from('firefighters')
-          .update({
-            name: profile.name,
-            location: profile.location,
-            description: profile.description,
-            bio: profile.bio,
-            qualifications: profile.qualifications,
-            experience_years: profile.experience_years,
-            phone: profile.phone,
-            instagram: profile.instagram,
-            linkedin: profile.linkedin,
-            specialties: profile.specialties
-          })
+          .update(updateData)
           .eq('user_id', user?.id);
 
-        if (error) throw error;
+        console.log('📊 Resposta do update:', { error });
+
+        if (error) {
+          console.error('❌ Erro no update:', error);
+          throw error;
+        }
+        
+        console.log('✅ Perfil atualizado com sucesso!');
       } else {
         const { error } = await supabase
           .from('companies')
@@ -153,11 +209,12 @@ export default function ProfilePage() {
         if (error) throw error;
       }
 
-      alert('Perfil atualizado com sucesso!');
+      alert('✅ Perfil atualizado com sucesso!');
       setIsEditing(false);
-    } catch (error) {
-      console.error('Erro ao salvar:', error);
-      alert('Erro ao salvar perfil');
+      await fetchProfile(); // Recarregar dados
+    } catch (error: any) {
+      console.error('❌ Erro completo:', error);
+      alert(`❌ Erro ao salvar perfil: ${error.message || 'Erro desconhecido'}`);
     } finally {
       setSaving(false);
     }

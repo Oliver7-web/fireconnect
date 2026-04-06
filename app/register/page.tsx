@@ -12,6 +12,7 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,86 +27,124 @@ export default function Register() {
       return;
     }
     
+    setLoading(true);
+    
     try {
+      console.log('🔵 Iniciando registro...');
+      
       // 1. Criar usuário no Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
-        password,
-        options: {
-          data: {
-            name: name,
-            user_type: userType
-          }
-        }
+        password
       });
 
       if (authError) {
+        console.error('❌ Erro no Auth:', authError);
         alert('Erro ao criar conta: ' + authError.message);
+        setLoading(false);
         return;
       }
 
       if (!authData.user) {
         alert('Erro ao criar usuário');
+        setLoading(false);
         return;
       }
 
+      const userId = authData.user.id;
+      console.log('✅ Auth criado. User ID:', userId);
+
+      // Aguardar um pouco para garantir que o Auth foi criado
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       // 2. Criar registro na tabela users
+      console.log('📝 Criando registro em users...');
       const { error: userError } = await supabase
         .from('users')
-        .insert([
-          { 
-            id: authData.user.id,
-            email,
-            type: userType 
-          }
-        ]);
+        .insert({
+          id: userId,
+          email: email,
+          type: userType,
+          created_at: new Date().toISOString()
+        });
 
       if (userError) {
-        console.error('Erro ao salvar dados:', userError);
+        console.error('❌ Erro ao criar user:', userError);
+        alert('Erro ao salvar dados do usuário: ' + userError.message);
+        setLoading(false);
+        return;
       }
+
+      console.log('✅ User criado');
 
       // 3. Criar perfil específico
       if (userType === 'firefighter') {
+        console.log('📝 Criando perfil de bombeiro...');
         const { error: ffError } = await supabase
           .from('firefighters')
-          .insert([
-            {
-              user_id: authData.user.id,
-              name,
-              location: '',
-              rating: 0,
-              available: true,
-              specialties: [],
-              description: `Olá! Sou ${name}, bombeiro civil profissional.`
-            }
-          ]);
+          .insert({
+            user_id: userId,
+            name: name,
+            location: '',
+            rating: 0,
+            available: true,
+            specialties: [],
+            description: `Olá! Sou ${name}, bombeiro civil profissional.`,
+            bio: '',
+            qualifications: [],
+            experience_years: 0,
+            phone: '',
+            instagram: '',
+            linkedin: '',
+            created_at: new Date().toISOString()
+          });
           
         if (ffError) {
-          console.error('Erro ao criar perfil de bombeiro:', ffError);
+          console.error('❌ Erro ao criar bombeiro:', ffError);
+          alert('Erro ao criar perfil: ' + ffError.message);
+          setLoading(false);
+          return;
         }
+        
+        console.log('✅ Bombeiro criado');
       } else {
+        console.log('📝 Criando perfil de empresa...');
         const { error: compError } = await supabase
           .from('companies')
-          .insert([
-            {
-              user_id: authData.user.id,
-              name,
-              location: '',
-              contracts_count: 0,
-              description: `${name} - Empresa de serviços`
-            }
-          ]);
+          .insert({
+            user_id: userId,
+            name: name,
+            location: '',
+            contracts_count: 0,
+            description: `${name} - Empresa de serviços`,
+            created_at: new Date().toISOString()
+          });
           
         if (compError) {
-          console.error('Erro ao criar perfil de empresa:', compError);
+          console.error('❌ Erro ao criar empresa:', compError);
+          alert('Erro ao criar perfil: ' + compError.message);
+          setLoading(false);
+          return;
         }
+        
+        console.log('✅ Empresa criada');
       }
 
-      alert('Conta criada com sucesso! Bem-vindo ao FireConnect!');
-      router.push('/dashboard');
-    } catch (error) {
-      console.error('Erro:', error);
-      alert('Erro ao criar conta. Tente novamente.');
+      console.log('🎉 Registro completo!');
+      alert('✅ Conta criada com sucesso! Complete seu perfil agora.');
+      
+      // Fazer login automático
+      await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      router.push('/profile?edit=true');
+    } catch (error: any) {
+      console.error('❌ Erro geral:', error);
+      alert('Erro ao criar conta: ' + (error.message || 'Erro desconhecido'));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -176,6 +215,7 @@ export default function Register() {
                 className="input-field"
                 placeholder={userType === 'firefighter' ? 'João Silva' : 'Empresa LTDA'}
                 required
+                disabled={loading}
               />
             </div>
 
@@ -192,6 +232,7 @@ export default function Register() {
                   className="input-field pl-10"
                   placeholder="seu@email.com"
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -209,12 +250,17 @@ export default function Register() {
                   className="input-field pl-10"
                   placeholder="••••••••"
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
 
-            <button type="submit" className="w-full btn-primary">
-              Cadastrar
+            <button 
+              type="submit" 
+              className="w-full btn-primary"
+              disabled={loading}
+            >
+              {loading ? 'Criando conta...' : 'Cadastrar'}
             </button>
           </form>
 
