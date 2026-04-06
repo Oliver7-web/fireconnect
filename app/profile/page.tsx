@@ -22,6 +22,11 @@ export default function ProfilePage() {
     phone: '',
     location: '',
     description: '',
+    bio: '',
+    qualifications: [] as string[],
+    experience_years: 0,
+    instagram: '',
+    linkedin: '',
     photo_url: '',
     isPremium: false,
     rating: 0,
@@ -30,6 +35,7 @@ export default function ProfilePage() {
   });
 
   const [newSpecialty, setNewSpecialty] = useState('');
+  const [newQualification, setNewQualification] = useState('');
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -58,9 +64,14 @@ export default function ProfilePage() {
           setProfile({
             name: ffData.name || '',
             email: user?.email || '',
-            phone: '',
+            phone: ffData.phone || '',
             location: ffData.location || '',
             description: ffData.description || '',
+            bio: ffData.bio || '',
+            qualifications: ffData.qualifications || [],
+            experience_years: ffData.experience_years || 0,
+            instagram: ffData.instagram || '',
+            linkedin: ffData.linkedin || '',
             photo_url: ffData.photo_url || '',
             isPremium: false,
             rating: Number(ffData.rating) || 0,
@@ -82,6 +93,11 @@ export default function ProfilePage() {
             phone: '',
             location: compData.location || '',
             description: compData.description || '',
+            bio: '',
+            qualifications: [],
+            experience_years: 0,
+            instagram: '',
+            linkedin: '',
             photo_url: compData.logo_url || '',
             isPremium: false,
             rating: 0,
@@ -113,6 +129,12 @@ export default function ProfilePage() {
             name: profile.name,
             location: profile.location,
             description: profile.description,
+            bio: profile.bio,
+            qualifications: profile.qualifications,
+            experience_years: profile.experience_years,
+            phone: profile.phone,
+            instagram: profile.instagram,
+            linkedin: profile.linkedin,
             specialties: profile.specialties
           })
           .eq('user_id', user?.id);
@@ -155,6 +177,23 @@ export default function ProfilePage() {
     setProfile({
       ...profile,
       specialties: profile.specialties.filter(s => s !== specialty)
+    });
+  };
+
+  const addQualification = () => {
+    if (newQualification.trim() && !profile.qualifications.includes(newQualification.trim())) {
+      setProfile({
+        ...profile,
+        qualifications: [...profile.qualifications, newQualification.trim()]
+      });
+      setNewQualification('');
+    }
+  };
+
+  const removeQualification = (qualification: string) => {
+    setProfile({
+      ...profile,
+      qualifications: profile.qualifications.filter(q => q !== qualification)
     });
   };
 
@@ -380,6 +419,135 @@ export default function ProfilePage() {
                 <p className="text-sm text-gray-700">{profile.description || 'Nenhuma descrição'}</p>
               )}
             </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-2">
+                Bio
+              </label>
+              {isEditing ? (
+                <textarea
+                  value={profile.bio}
+                  onChange={(e) => setProfile({...profile, bio: e.target.value})}
+                  className="input-field min-h-[80px]"
+                  placeholder="Uma breve biografia profissional..."
+                />
+              ) : (
+                <p className="text-sm text-gray-700">{profile.bio || 'Nenhuma bio'}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-2">
+                Telefone
+              </label>
+              {isEditing ? (
+                <input
+                  type="tel"
+                  value={profile.phone}
+                  onChange={(e) => setProfile({...profile, phone: e.target.value})}
+                  className="input-field"
+                  placeholder="(11) 98765-4321"
+                />
+              ) : (
+                <p className="text-sm text-gray-700">{profile.phone || 'Não informado'}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-2">
+                Anos de Experiência
+              </label>
+              {isEditing ? (
+                <input
+                  type="number"
+                  min="0"
+                  value={profile.experience_years}
+                  onChange={(e) => setProfile({...profile, experience_years: parseInt(e.target.value) || 0})}
+                  className="input-field"
+                  placeholder="0"
+                />
+              ) : (
+                <p className="text-sm text-gray-700">{profile.experience_years} anos</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-2">
+                Instagram
+              </label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={profile.instagram}
+                  onChange={(e) => setProfile({...profile, instagram: e.target.value})}
+                  className="input-field"
+                  placeholder="@seu_usuario"
+                />
+              ) : (
+                <p className="text-sm text-gray-700">{profile.instagram || 'Não informado'}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-2">
+                LinkedIn
+              </label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={profile.linkedin}
+                  onChange={(e) => setProfile({...profile, linkedin: e.target.value})}
+                  className="input-field"
+                  placeholder="linkedin.com/in/seu-perfil"
+                />
+              ) : (
+                <p className="text-sm text-gray-700">{profile.linkedin || 'Não informado'}</p>
+              )}
+            </div>
+
+            {profile.qualifications.length > 0 || isEditing ? (
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-2">
+                  Qualificações
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {profile.qualifications.map((qualification, index) => (
+                    <span 
+                      key={index} 
+                      className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm font-semibold flex items-center space-x-2"
+                    >
+                      <span>{qualification}</span>
+                      {isEditing && (
+                        <button 
+                          onClick={() => removeQualification(qualification)}
+                          className="hover:text-blue-800"
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                    </span>
+                  ))}
+                </div>
+                {isEditing && (
+                  <div className="mt-3 flex space-x-2">
+                    <input
+                      type="text"
+                      value={newQualification}
+                      onChange={(e) => setNewQualification(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addQualification()}
+                      className="input-field flex-1"
+                      placeholder="Ex: NR-23, Primeiros Socorros..."
+                    />
+                    <button 
+                      onClick={addQualification}
+                      className="btn-primary"
+                    >
+                      Adicionar
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : null}
 
             {profile.specialties.length > 0 && (
               <div>

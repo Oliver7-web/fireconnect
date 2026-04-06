@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Loading from '@/components/Loading';
-import { MapPin, Star, Download, MessageCircle, ArrowLeft, Award } from 'lucide-react';
+import { MapPin, Star, Download, MessageCircle, ArrowLeft, Award, UserPlus, UserMinus, Phone, Link } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export default function FirefighterProfile() {
@@ -15,12 +15,35 @@ export default function FirefighterProfile() {
   const [certificates, setCertificates] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentFirefighterId, setCurrentFirefighterId] = useState<string | null>(null);
 
   useEffect(() => {
     if (params.id) {
+      fetchCurrentUser();
       fetchProfile();
     }
   }, [params.id]);
+
+  const fetchCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setCurrentUserId(user.id);
+      // Buscar ID do firefighter do usuário atual
+      const { data: ffData } = await supabase
+        .from('firefighters')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (ffData) {
+        setCurrentFirefighterId(ffData.id);
+      }
+    }
+  };
 
   const fetchProfile = async () => {
     try {
@@ -61,6 +84,78 @@ export default function FirefighterProfile() {
       console.error('Erro:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (firefighter && currentFirefighterId) {
+      fetchFollowData();
+    }
+  }, [firefighter, currentFirefighterId]);
+
+  const fetchFollowData = async () => {
+    try {
+      // Contar seguidores
+      const { data: followersData } = await supabase
+        .from('followers')
+        .select('*', { count: 'exact', head: true })
+        .eq('following_id', params.id);
+      
+      setFollowersCount(followersData?.length || 0);
+
+      // Contar seguindo
+      const { data: followingData } = await supabase
+        .from('followers')
+        .select('*', { count: 'exact', head: true })
+        .eq('follower_id', params.id);
+      
+      setFollowingCount(followingData?.length || 0);
+
+      // Verificar se está seguindo
+      if (currentFirefighterId && currentFirefighterId !== params.id) {
+        const { data: followData } = await supabase
+          .from('followers')
+          .select('*')
+          .eq('follower_id', currentFirefighterId)
+          .eq('following_id', params.id)
+          .single();
+        
+        setIsFollowing(!!followData);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar dados de seguidores:', error);
+    }
+  };
+
+  const handleFollowToggle = async () => {
+    if (!currentFirefighterId || currentFirefighterId === params.id) return;
+
+    try {
+      if (isFollowing) {
+        // Deixar de seguir
+        await supabase
+          .from('followers')
+          .delete()
+          .eq('follower_id', currentFirefighterId)
+          .eq('following_id', params.id);
+        
+        setIsFollowing(false);
+        setFollowersCount(prev => prev - 1);
+      } else {
+        // Seguir
+        await supabase
+          .from('followers')
+          .insert({
+            follower_id: currentFirefighterId,
+            following_id: params.id
+          });
+        
+        setIsFollowing(true);
+        setFollowersCount(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error('Erro ao seguir/deixar de seguir:', error);
+      alert('Erro ao processar ação. Tente novamente.');
     }
   };
 
@@ -117,21 +212,58 @@ export default function FirefighterProfile() {
                 <span>{firefighter.location}</span>
               </div>
               
-              <div className="flex items-center justify-center md:justify-start mb-4">
-                <Star size={18} className="text-yellow-500 fill-yellow-500 mr-1" />
-                <span className="text-lg font-semibold text-black">{Number(firefighter.rating).toFixed(1)}</span>
-                <span className="text-sm text-gray-500 ml-2">({reviews.length} avaliações)</span>
+              <div className="flex items-center justify-center md:justify-start space-x-6 mb-4">
+                <div className="text-center">
+                  <p className="text-lg font-semibold text-black">{Number(firefighter.rating).toFixed(1)}</p>
+                  <p className="text-xs text-gray-500">Avaliação</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-semibold text-black">{followersCount}</p>
+                  <p className="text-xs text-gray-500">Seguidores</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-semibold text-black">{followingCount}</p>
+                  <p className="text-xs text-gray-500">Seguindo</p>
+                </div>
+                {firefighter.experience_years > 0 && (
+                  <div className="text-center">
+                    <p className="text-lg font-semibold text-black">{firefighter.experience_years}</p>
+                    <p className="text-xs text-gray-500">Anos Exp.</p>
+                  </div>
+                )}
               </div>
+              
+              {firefighter.bio && (
+                <p className="text-sm text-gray-700 mb-4 italic">{firefighter.bio}</p>
+              )}
               
               <p className="text-sm text-gray-700 mb-6">{firefighter.description}</p>
               
               <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                {currentFirefighterId && currentFirefighterId !== params.id && (
+                  <button 
+                    onClick={handleFollowToggle}
+                    className={`${isFollowing ? 'btn-secondary' : 'btn-primary'} flex items-center justify-center`}
+                  >
+                    {isFollowing ? (
+                      <>
+                        <UserMinus size={18} className="mr-2" />
+                        Deixar de Seguir
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus size={18} className="mr-2" />
+                        Seguir
+                      </>
+                    )}
+                  </button>
+                )}
                 <button className="btn-primary flex items-center justify-center">
                   Contratar
                 </button>
                 <button className="btn-secondary flex items-center justify-center">
                   <MessageCircle size={18} className="mr-2" />
-                  Enviar Mensagem
+                  Mensagem
                 </button>
               </div>
             </div>
@@ -150,6 +282,61 @@ export default function FirefighterProfile() {
                   {specialty}
                 </span>
               ))}
+            </div>
+          </div>
+        )}
+
+        {firefighter.qualifications && firefighter.qualifications.length > 0 && (
+          <div className="card mb-6">
+            <h2 className="text-base font-semibold text-black mb-4">Qualificações</h2>
+            <div className="flex flex-wrap gap-2">
+              {firefighter.qualifications.map((qualification: string, index: number) => (
+                <span key={index} className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm font-semibold">
+                  {qualification}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(firefighter.phone || firefighter.instagram || firefighter.linkedin) && (
+          <div className="card mb-6">
+            <h2 className="text-base font-semibold text-black mb-4">Contato</h2>
+            <div className="space-y-3">
+              {firefighter.phone && (
+                <div className="flex items-center space-x-3">
+                  <Phone size={18} className="text-gray-400" />
+                  <a href={`tel:${firefighter.phone}`} className="text-sm text-primary hover:underline">
+                    {firefighter.phone}
+                  </a>
+                </div>
+              )}
+              {firefighter.instagram && (
+                <div className="flex items-center space-x-3">
+                  <Link size={18} className="text-gray-400" />
+                  <a 
+                    href={`https://instagram.com/${firefighter.instagram.replace('@', '')}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline"
+                  >
+                    {firefighter.instagram}
+                  </a>
+                </div>
+              )}
+              {firefighter.linkedin && (
+                <div className="flex items-center space-x-3">
+                  <Link size={18} className="text-gray-400" />
+                  <a 
+                    href={firefighter.linkedin.startsWith('http') ? firefighter.linkedin : `https://${firefighter.linkedin}`}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline"
+                  >
+                    LinkedIn
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         )}

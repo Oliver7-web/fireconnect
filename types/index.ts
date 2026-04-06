@@ -14,6 +14,12 @@ export interface Firefighter {
   photo_url?: string;
   location: string;
   description?: string;
+  bio?: string;
+  qualifications?: string[];
+  experience_years?: number;
+  phone?: string;
+  instagram?: string;
+  linkedin?: string;
   rating: number;
   available: boolean;
   specialties: string[];
@@ -61,5 +67,12 @@ export interface Review {
   company_id: string;
   rating: number;
   comment: string;
+  created_at: string;
+}
+
+export interface Follower {
+  id: string;
+  follower_id: string;
+  following_id: string;
   created_at: string;
 }
